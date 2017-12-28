@@ -957,6 +957,7 @@ int emulator_patch_ROM ()
 }
 
 
+int ec_breakpoint_encountered = 0;
 
 void emulator_reset (bool bolMF2Reset)
 {
@@ -2301,6 +2302,19 @@ int cap32_main (int argc, char **argv)
             }
          }
 
+	 if (args.exitAfterBreakpoints!=0) {
+	    if (iExitCondition == EC_BREAKPOINT) {
+	       LOG_INFO("EC_BREAKPOINT count " << ec_breakpoint_encountered);
+	       z80.break_point = 0xffffffff; // clear break point
+	       if (++ec_breakpoint_encountered >= args.exitAfterBreakpoints) {
+		 LOG_INFO("Exiting on EC_BREAKPOINT because " << ec_breakpoint_encountered << ">=" << args.exitAfterBreakpoints);
+		 bolDone=true;
+	       }
+	    } else {
+ 	       z80.break_point = 0; // set break point
+	    }
+	 }
+	 
          if (iExitCondition == EC_FRAME_COMPLETE) { // emulation finished rendering a complete frame?
             dwFrameCountOverall++;
             dwFrameCount++;

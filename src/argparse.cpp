@@ -14,6 +14,7 @@ extern bool log_verbose;
 const struct option long_options[] =
 {
    {"autocmd",  required_argument, nullptr, 'a'},
+   {"reset-exits",  no_argument, nullptr, 'r'},
    {"cfg_file", required_argument, nullptr, 'c'},
    {"version",  no_argument, nullptr, 'V'},
    {"help",     no_argument, nullptr, 'h'},
@@ -34,6 +35,7 @@ void usage(std::ostream &os, char *progPath, int errcode)
    os << "Usage: " << progname << " [options] <slotfile(s)>\n";
    os << "\nSupported options are:\n";
    os << "   -a/--autocmd=<command>: execute command as soon as the emulator starts.\n";
+   os << "   -r/--reset-exits:       exit emulator on next CPC reset. Useful to run one program and return to caller.\n";
    os << "   -c/--cfg_file=<file>:   use <file> as the emulator configuration file instead of the default.\n";
    os << "   -h/--help:              shows this help\n";
    os << "   -V/--version:           outputs version and exit\n";
@@ -93,7 +95,7 @@ void parseArguments(int argc, char **argv, std::vector<std::string>& slot_list, 
 
    optind = 0; // To please test framework, when this function is called multiple times !
    while(true) {
-      c = getopt_long (argc, argv, "a:c:hvV",
+      c = getopt_long (argc, argv, "a:rc:hvV",
                        long_options, &option_index);
 
       /* Detect the end of the options. */
@@ -106,6 +108,10 @@ void parseArguments(int argc, char **argv, std::vector<std::string>& slot_list, 
             LOG_VERBOSE("Append to autocmd: " << optarg);
             args.autocmd += replaceCap32Keys(optarg);
             args.autocmd += "\n";
+            break;
+
+         case 'r':
+	    args.exitAfterBreakpoints = 2;
             break;
 
          case 'c':
