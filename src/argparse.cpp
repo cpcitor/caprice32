@@ -107,7 +107,7 @@ void parseArguments(int argc, char **argv, std::vector<std::string>& slot_list, 
             break;
 
          case 'r':
-	    args.exitAfterBreakpoints = 2;
+	    args.exitAfterBreakpoints = 1;
             break;
 
          case 'c':
