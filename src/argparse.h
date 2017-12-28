@@ -9,6 +9,7 @@ class CapriceArgs
    public:
       CapriceArgs();
       std::string autocmd;
+      int exitAfterBreakpoints;
       std::string cfgFilePath;
 };
 
