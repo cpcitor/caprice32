@@ -1583,6 +1583,8 @@ void z80_execute_pfx_cb_instruction()
    }
 }
 
+#define show_indented(REG) \
+    printf("@%04x ", (REG))
 
 
 void z80_execute_pfx_dd_instruction()
@@ -1610,10 +1612,10 @@ void z80_execute_pfx_dd_instruction()
       case add_d:       ADD(_D); break;
       case add_e:       ADD(_E); break;
       case add_h:       ADD(_IXh); break;
-      case add_hl_bc:   ADD16(IX, BC); printf("@%04x ", _PC-2); printf("add ix,bc IX=#%04x\n", _IX);   break;
-      case add_hl_de:   ADD16(IX, DE); printf("@%04x ", _PC-2); printf("add ix,de IX=#%04x\n", _IX);   break;
-      case add_hl_hl:   ADD16(IX, IX); printf("@%04x ", _PC-2); printf("add ix,ix IX=#%04x\n", _IX);   break;
-      case add_hl_sp:   ADD16(IX, SP); printf("@%04x ", _PC-2); printf("add ix,sp IX=#%04x\n", _IX);   break;
+      case add_hl_bc:   ADD16(IX, BC); show_indented(_PC-2); printf("add ix,bc IX=#%04x\n", _IX);   break;
+      case add_hl_de:   ADD16(IX, DE); show_indented(_PC-2); printf("add ix,de IX=#%04x\n", _IX);   break;
+      case add_hl_hl:   ADD16(IX, IX); show_indented(_PC-2); printf("add ix,ix IX=#%04x\n", _IX);   break;
+      case add_hl_sp:   ADD16(IX, SP); show_indented(_PC-2); printf("add ix,sp IX=#%04x\n", _IX);   break;
       case add_l:       ADD(_IXl); break;
       case add_mhl:     { signed char o = read_mem(_PC++); ADD(read_mem(_IX+o)); } break;
       case and_a:       AND(_A); break;
@@ -1654,8 +1656,8 @@ void z80_execute_pfx_dd_instruction()
       case dec_de:      _DE--; iWSAdjust++; break;
       case dec_e:       DEC(_E); break;
       case dec_h:       DEC(_IXh); break;
-      case dec_hl:      _IX--; iWSAdjust++; printf("@%04x ", _PC-2); printf("dec ix IX=#%04x\n", _IX);    break;
-      case dec_l:       DEC(_IXl); printf("@%04x ", _PC-2); printf("dec ixl IX=#%04x\n", _IX);    break;
+      case dec_hl:      _IX--; iWSAdjust++; show_indented(_PC-2); printf("dec ix IX=#%04x\n", _IX);    break;
+      case dec_l:       DEC(_IXl); show_indented(_PC-2); printf("dec ixl IX=#%04x\n", _IX);    break;
       case dec_mhl:     { signed char o = read_mem(_PC++); byte b = read_mem(_IX+o); DEC(b); write_mem(_IX+o, b); } break;
       case dec_sp:      _SP--; iWSAdjust++; break;
       case di:          _IFF1 = _IFF2 = 0; z80.EI_issued = 0; break;
@@ -1664,7 +1666,7 @@ void z80_execute_pfx_dd_instruction()
       case exx:         EXX; break;
       case ex_af_af:    EX(z80.AF, z80.AFx); break;
       case ex_de_hl:    EX(z80.DE, z80.HL); break;
-      case ex_msp_hl:   EX_SP(IX); iWSAdjust++; printf("@%04x ", _PC-2); printf("ex sp,ix IX=#%04x\n", _IX);    break;
+      case ex_msp_hl:   EX_SP(IX); iWSAdjust++; show_indented(_PC-2); printf("ex sp,ix IX=#%04x\n", _IX);    break;
       case halt:        _HALT = 1; _PC--; break;
       case ina:         { z80_wait_states iCycleCount = Ia_;} { reg_pair p; p.b.l = read_mem(_PC++); p.b.h = _A; _A = z80_IN_handler(p); } break;
       case inc_a:       INC(_A); break;
@@ -1743,8 +1745,8 @@ void z80_execute_pfx_dd_instruction()
       case ld_e_h:      _E = _IXh; break;
       case ld_e_l:      _E = _IXl; break;
       case ld_e_mhl:    { signed char o = read_mem(_PC++); _E = read_mem(_IX+o); } break;
-      case ld_hl_mword: LD16_MEM(IX); printf("@%04x ", _PC-2); printf("ld ix,(#....) IX=#%04x\n", _IX);    break;
-   case ld_hl_word:  printf("@%04x ", _PC-2); z80.IX.b.l = read_mem(_PC++); z80.IX.b.h = read_mem(_PC++); printf("ld IX,#%04x\n", _IX); break;
+      case ld_hl_mword: LD16_MEM(IX); show_indented(_PC-2); printf("ld ix,(#....) IX=#%04x\n", _IX);    break;
+   case ld_hl_word:  show_indented(_PC-2); z80.IX.b.l = read_mem(_PC++); z80.IX.b.h = read_mem(_PC++); printf("ld IX,#%04x\n", _IX); break;
       case ld_h_a:      _IXh = _A; break;
       case ld_h_b:      _IXh = _B; break;
       case ld_h_byte:   _IXh = read_mem(_PC++); break;
@@ -1754,13 +1756,13 @@ void z80_execute_pfx_dd_instruction()
       case ld_h_h:      break;
       case ld_h_l:      _IXh = _IXl; break;
       case ld_h_mhl:    { signed char o = read_mem(_PC++); _H = read_mem(_IX+o); } break;
-      case ld_l_a:      _IXl = _A; printf("@%04x ", _PC-2); printf("ld IXl,a IX=#%04x\n", _IX);  break;
-      case ld_l_b:      _IXl = _B; printf("@%04x ", _PC-2); printf("ld IXl,b IX=,#%04x\n", _IX);  break;
-      case ld_l_byte:   _IXl = read_mem(_PC++); printf("@%04x ", _PC-2); printf("ld IXl,#%04x\n", _IX);  break;
-      case ld_l_c:      _IXl = _C; printf("@%04x ", _PC-2); printf("ld IXl,c IX=#%04x\n", _IX);  break;
-      case ld_l_d:      _IXl = _D; printf("@%04x ", _PC-2); printf("ld IXl,d IX=#%04x\n", _IX);  break;
-      case ld_l_e:      _IXl = _E; printf("@%04x ", _PC-2); printf("ld IXl,e IX=#%04x\n", _IX);  break;
-      case ld_l_h:      _IXl = _IXh; printf("@%04x ", _PC-2); printf("ld IXl,h IX=#%04x\n", _IX);  break;
+      case ld_l_a:      _IXl = _A; show_indented(_PC-2); printf("ld IXl,a IX=#%04x\n", _IX);  break;
+      case ld_l_b:      _IXl = _B; show_indented(_PC-2); printf("ld IXl,b IX=,#%04x\n", _IX);  break;
+      case ld_l_byte:   _IXl = read_mem(_PC++); show_indented(_PC-2); printf("ld IXl,#%04x\n", _IX);  break;
+      case ld_l_c:      _IXl = _C; show_indented(_PC-2); printf("ld IXl,c IX=#%04x\n", _IX);  break;
+      case ld_l_d:      _IXl = _D; show_indented(_PC-2); printf("ld IXl,d IX=#%04x\n", _IX);  break;
+      case ld_l_e:      _IXl = _E; show_indented(_PC-2); printf("ld IXl,e IX=#%04x\n", _IX);  break;
+      case ld_l_h:      _IXl = _IXh; show_indented(_PC-2); printf("ld IXl,h IX=#%04x\n", _IX);  break;
       case ld_l_l:      break;
    case ld_l_mhl:    { signed char o = read_mem(_PC++); _L = read_mem(_IX+o); }  break;
       case ld_mbc_a:    write_mem(_BC, _A); break;
@@ -1796,11 +1798,11 @@ void z80_execute_pfx_dd_instruction()
       case pop_af:      POP(AF); break;
       case pop_bc:      POP(BC); break;
       case pop_de:      POP(DE); break;
-   case pop_hl:      { int oldix=_IX ;  POP(IX); printf("@%04x ", _PC-2); printf("pop ix IX=#%04x -> #%04x\n", oldix, _IX); }  break;
+   case pop_hl:      { int oldix=_IX ;  POP(IX); show_indented(_PC-2); printf("pop ix IX=#%04x -> #%04x\n", oldix, _IX); }  break;
       case push_af:     PUSH(AF); break;
       case push_bc:     PUSH(BC); break;
       case push_de:     PUSH(DE); break;
-   case push_hl:     PUSH(IX); printf("@%04x ", _PC-2); printf("push ix IX=#%04x\n", _IX);   break;
+   case push_hl:     PUSH(IX); show_indented(_PC-2); printf("push ix IX=#%04x\n", _IX);   break;
       case ret:         RET; break;
       case ret_c:       if (_F & Cflag) { iCycleCount += cc_ex[bOpCode]; RET } else { iWSAdjust++; } ; break;
       case ret_m:       if (_F & Sflag) { iCycleCount += cc_ex[bOpCode]; RET } else { iWSAdjust++; } ; break;
@@ -2436,7 +2438,7 @@ void z80_execute_pfx_fd_instruction()
       case and_h:       AND(_IYh); break;
       case and_l:       AND(_IYl); break;
       case and_mhl:     { signed char o = read_mem(_PC++); AND(read_mem(_IY+o)); } break;
-      case call:        CALL; printf("@%04x ", _PC-2); printf("call. IX=#%04x\n", _IX);    break;
+      case call:        CALL; show_indented(_PC-2); printf("call. IX=#%04x\n", _IX);    break;
       case call_c:      if (_F & Cflag) { iCycleCount += cc_ex[bOpCode]; CALL } else { _PC += 2; } break;
       case call_m:      if (_F & Sflag) { iCycleCount += cc_ex[bOpCode]; CALL } else { _PC += 2; } break;
       case call_nc:     if (!(_F & Cflag)) { iCycleCount += cc_ex[bOpCode]; CALL } else { _PC += 2; } break;
@@ -2612,7 +2614,7 @@ void z80_execute_pfx_fd_instruction()
       case push_bc:     PUSH(BC); break;
       case push_de:     PUSH(DE); break;
       case push_hl:     PUSH(IY); break;
-      case ret:         printf("@%04x ", _PC-2); printf("ret. IX=#%04x\n", _IX);    RET; break;
+      case ret:         show_indented(_PC-2); printf("ret. IX=#%04x\n", _IX);    RET; break;
       case ret_c:       if (_F & Cflag) { iCycleCount += cc_ex[bOpCode]; RET } else { iWSAdjust++; } ; break;
       case ret_m:       if (_F & Sflag) { iCycleCount += cc_ex[bOpCode]; RET } else { iWSAdjust++; } ; break;
       case ret_nc:      if (!(_F & Cflag)) { iCycleCount += cc_ex[bOpCode]; RET } else { iWSAdjust++; } ; break;
