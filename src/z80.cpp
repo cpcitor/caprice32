@@ -1586,7 +1586,7 @@ void z80_execute_pfx_cb_instruction()
 static const char *const indentstring="                                                                                                                                                                                                                                                                ";
 
 #define show_indented(REG) \
-    printf("@%04x %s", (REG), indentstring+(z80.SP.b.l))
+    printf("@%04x ", (REG)); { for (uint16_t sphigh=0xff; sphigh>= z80.SP.b.l ; sphigh--) { printf("%02x ", read_mem((z80.SP.b.h<<8)+sphigh)) ; } }
 
 
 void z80_execute_pfx_dd_instruction()
